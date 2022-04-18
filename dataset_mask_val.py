@@ -97,12 +97,22 @@ class Dataset(object):
         scale_transform_mask = torchvision.transforms.Resize([scaled_size, scaled_size], interpolation=Image.NEAREST)
         scale_transform_rgb = torchvision.transforms.Resize([scaled_size, scaled_size], interpolation=Image.BILINEAR)
         flip_flag = random.random()
+
         support_rgb = self.normalize(
             self.ToTensor(
                 scale_transform_rgb(
                     self.flip(flip_flag,
                               Image.open(
                                   os.path.join(self.data_dir, 'JPEGImages', support_name + '.jpg'))))))
+
+
+
+        support_rgbORG =self.ToTensor(
+                scale_transform_rgb(
+                    self.flip(flip_flag,
+                              Image.open(
+                                  os.path.join(self.data_dir, 'JPEGImages', support_name + '.jpg')))))
+
 
         support_mask = self.ToTensor(
             scale_transform_mask(
@@ -115,6 +125,7 @@ class Dataset(object):
         margin_w = random.randint(0, scaled_size - input_size)
 
         support_rgb = support_rgb[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
+        support_rgbORG = support_rgbORG[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
         support_mask = support_mask[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
 
         # random scale and crop for query
@@ -131,6 +142,14 @@ class Dataset(object):
                               Image.open(
                                   os.path.join(self.data_dir, 'JPEGImages', query_name + '.jpg'))))))
 
+        query_rgbORG = self.ToTensor(
+                scale_transform_rgb(
+                    self.flip(flip_flag,
+                              Image.open(
+                                  os.path.join(self.data_dir, 'JPEGImages', query_name + '.jpg')))))
+
+
+
         query_mask = self.ToTensor(
             scale_transform_mask(
                 self.flip(flip_flag,
@@ -142,6 +161,7 @@ class Dataset(object):
         margin_w = random.randint(0, scaled_size - input_size)
 
         query_rgb = query_rgb[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
+        query_rgbORG = query_rgbORG[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
         query_mask = query_mask[:, margin_h:margin_h + input_size, margin_w:margin_w + input_size]
 
         if self.history_mask_list[index] is None:
@@ -154,7 +174,7 @@ class Dataset(object):
 
 
 
-        return query_rgb, query_mask, support_rgb, support_mask,history_mask,sample_class,index
+        return support_rgbORG,query_rgbORG,query_rgb, query_mask, support_rgb, support_mask,history_mask,sample_class,index
 
     def flip(self, flag, img):
         if flag > 0.5:
